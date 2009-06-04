@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # django-bitly -  Bit.ly integration for django
 # 
-# Copyright (C) 2009 Josh Ourisman
+# Copyright (C) 2009 Discovery Creative
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -35,12 +35,12 @@ from distutils.core import setup
 
 
 description, long_description = __doc__.split('\n\n', 1)
-VERSION = '0.09'
+VERSION = '0.1'
 
 setup(
     name='django-bitly',
     version=VERSION,
-    author='Josh Ourisman',
+    author='Discovery Creative',
     description=description,
     long_description=long_description,
     license='BSD',
