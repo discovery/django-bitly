@@ -46,8 +46,7 @@ setup(
     license='BSD',
     platforms=['any'],
     url='http://bitbucket.org/discovery/django-bitly/',
-    # download_url=('http://launchpad.net/django-openid-auth/trunk/%s/+download'
-    #               '/django-openid-auth-%s.tar.gz' % (VERSION, VERSION)),
+    download_url=("http://bitbucket.org/discovery/django-bitly/get/4be86439b6f4.bz2"),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',

@@ -25,6 +25,24 @@ class BittleManager(models.Manager):
         if not (obj.get_absolute_url and settings.BITLY_LOGIN and settings.BITLY_API_KEY):
             # print "Failed initial"
             return False
+            
+        try:
+            content_type = ContentType.objects.get_for_model(obj)
+            bittle = Bittle.objects.get(content_type=content_type, object_id=obj.id)
+
+            # Check if the absolute_url for the object has changed.
+            if bittle.absolute_url != obj.get_absolute_url():
+                # If Django redirects are enabled and set up a redirect from
+                # the old absolute url to the new one. Old Bittle should be
+                # kept so that we still have access to its stats, but that will
+                # mean handling multiple Bittles for any given object. For now
+                # we'll delete the old Bittle and create a new one.
+                bittle.delete()
+                bittle = Bittle.objects.bitlify(obj)
+                
+            return bittle
+        except:
+            pass
         
         current_domain = Site.objects.get_current().domain
         url = "http://%s%s" % (current_domain, obj.get_absolute_url())
@@ -57,8 +75,15 @@ class Bittle(models.Model):
     shortUrl = models.URLField(verify_exists=True)
     userHash = models.CharField(max_length=10)
     
+    # Timestamps
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ["-date_created",]
+    
     def __unicode__(self):
-        return u"Bittle"
+        return self.hash
 
     @models.permalink
     def get_absolute_url(self):
