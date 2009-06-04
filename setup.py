@@ -46,7 +46,6 @@ setup(
     license='BSD',
     platforms=['any'],
     url='http://bitbucket.org/discovery/django-bitly/',
-    download_url=("http://bitbucket.org/discovery/django-bitly/get/4be86439b6f4.bz2"),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
@@ -59,9 +58,6 @@ setup(
     packages=[
         'django_bitly',
         ],
-    # package_data={
-    #     'django_openid_auth': ['templates/openid/*.html'],
-    #     },
     provides=['django_bitly'],
     requires=['django (>=1.0)',],
     )
