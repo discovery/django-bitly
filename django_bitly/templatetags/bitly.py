@@ -5,7 +5,7 @@ from django_bitly.models import Bittle
 register = Library()
 
 @register.filter
-def bitlify(value, arg):
+def bitlify(value):
     """
     Gets or create a Bittle object for the passed object. If unable to get
     Bittle and/or create bit.ly, will just return the get_absolute_url value.
