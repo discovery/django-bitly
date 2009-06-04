@@ -46,6 +46,7 @@ setup(
     license='BSD',
     platforms=['any'],
     url='http://bitbucket.org/discovery/django-bitly/',
+    download_url=("http://bitbucket.org/discovery/django-bitly/get/0.1.bz2"),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
