@@ -120,11 +120,10 @@ class Bittle(models.Model):
                 self.links = [(url, links[url]) for url in links]
             
             def __unicode__(self):
-                if self.domain != "":
+                if self.domain == "" and self.links[0][0] == "direct":
+                    return "direct"
+                elif self.domain != "":
                     return self.domain
-                domain = "%s: %s" % (self.links[0][0], self.links[0][1])
-                self.links = []
-                return domain
         
         referrers = self.stats["referrers"]
         referrer_list = [Referrer(domain, referrers[domain]) for domain in referrers]
