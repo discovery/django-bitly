@@ -1,0 +1,9 @@
+# easy_install virtualenv virtualenvwrapper pip
+# mkvirtualenv django-bitly
+# pip install -E /path/to/virtualenvs/django-bitly -r /path/to/trunk/requirements/external_apps.txt
+
+# get python libs
+-r libs.txt
+
+# editable checkouts
+-e svn+http://code.djangoproject.com/svn/django/tags/releases/1.0.2/#egg=django

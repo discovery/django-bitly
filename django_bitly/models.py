@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from django.conf import settings
+
+import urllib, urllib2, datetime
+import simplejson as json
 
 # Create your models here.
 class BittleManager(models.Manager):
@@ -18,12 +22,11 @@ class BittleManager(models.Manager):
         The object must have a ``get_absolute_url`` in order for this to
         work.
         """
-        import urllib, urllib2
-        import simplejson as json
-        from django.conf import settings
         
-        if not (obj.get_absolute_url and settings.BITLY_LOGIN and settings.BITLY_API_KEY):
-            # print "Failed initial"
+        # If the object does not have a get_absolute_url() method or the
+        # Bit.ly API authentication settings are not in settings.py, fail.
+        if not (hasattr(obj, 'get_absolute_url') and settings.BITLY_LOGIN and settings.BITLY_API_KEY):
+            print "Failed primary."
             return False
             
         try:
@@ -34,9 +37,9 @@ class BittleManager(models.Manager):
             if bittle.absolute_url != obj.get_absolute_url():
                 # If Django redirects are enabled and set up a redirect from
                 # the old absolute url to the new one. Old Bittle should be
-                # kept so that we still have access to its stats, but that will
-                # mean handling multiple Bittles for any given object. For now
-                # we'll delete the old Bittle and create a new one.
+                # kept so that we still have access to its stats, but that
+                # will mean handling multiple Bittles for any given object.
+                # For now we'll delete the old Bittle and create a new one.
                 bittle.delete()
                 bittle = Bittle.objects.bitlify(obj)
                 
@@ -48,7 +51,7 @@ class BittleManager(models.Manager):
         url = "http://%s%s" % (current_domain, obj.get_absolute_url())
         
         create_api = 'http://api.bit.ly/shorten'
-        data = urllib.urlencode(dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY))
+        data = urllib.urlencode(dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY, history=1))
         link = json.loads(urllib2.urlopen(create_api, data=data).read().strip())
         
         if link["errorCode"] == 0 and link["statusCode"] == "OK":
@@ -57,7 +60,7 @@ class BittleManager(models.Manager):
             bittle.save()
             return bittle
         else:
-            # print "Failed secondary: %s" % link
+            print "Failed secondary: %s" % link
             return False
     
 class Bittle(models.Model):
@@ -75,6 +78,9 @@ class Bittle(models.Model):
     shortUrl = models.URLField(verify_exists=True)
     userHash = models.CharField(max_length=10)
     
+    statstring = models.TextField(blank=True, editable=False)
+    statstamp = models.DateTimeField(blank=True, null=True, editable=False)
+    
     # Timestamps
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
@@ -84,7 +90,47 @@ class Bittle(models.Model):
     
     def __unicode__(self):
         return self.hash
+        
+    def _get_stats(self):
+        now = datetime.datetime.now()
+        stamp = self.statstamp
+        timeout = datetime.timedelta(minutes=30)
+        if stamp is None or now-stamp > timeout:
+            create_api = "http://api.bit.ly/stats"
+            data = urllib.urlencode(dict(version="2.0.1", hash=self.hash, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY))
+            link = urllib2.urlopen(create_api, data=data).read().strip()
+            self.statstring = link
+            self.statstamp = now
+            self.save()
+
+        return json.loads(self.statstring)["results"]
+    stats = property(_get_stats)
+    
+    def _get_clicks(self):
+        return self.stats["clicks"]
+    clicks = property(_get_clicks)
+    
+    def _get_referrers(self):
+        class Referrer:
+            domain = ""
+            links = []
+            
+            def __init__(self, domain, links):
+                self.domain = domain
+                self.links = [(url, links[url]) for url in links]
+            
+            def __unicode__(self):
+                if self.domain != "":
+                    return self.domain
+                domain = "%s: %s" % (self.links[0][0], self.links[0][1])
+                self.links = []
+                return domain
+        
+        referrers = self.stats["referrers"]
+        referrer_list = [Referrer(domain, referrers[domain]) for domain in referrers]
+        return referrer_list
+    referrers = property(_get_referrers)
 
     @models.permalink
     def get_absolute_url(self):
-        return ('Bittle', [self.id])
+        return ('bittle', [self.id])

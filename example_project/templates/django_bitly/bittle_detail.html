@@ -1,0 +1,15 @@
+<html>
+<head>
+    <title>{{ object }}</title>
+</head>
+<body>
+    <a href="{{ object.shortUrl }}">{{ object.shortUrl }}</a><br />
+    {{ object.clicks }} click{{ object.clicks|pluralize }}<br />
+    <ul>{% for referrer in object.referrers %}
+        <li>{{ referrer }}</li>
+        <ul>{% for link in referrer.links %}
+            <li>{{ link.0 }}: {{ link.1 }}</li>
+        {% endfor %}</ul>
+    {% endfor %}</ul>
+</body>
+</html>
