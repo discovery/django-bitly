@@ -1,0 +1,12 @@
+<html>
+<head>
+    <title>Test Objects</title>
+</head>
+<body>
+    <ol>
+    {% for object in object_list %}
+    <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    {% endfor %}
+    </ol>
+</body>
+</html>

@@ -22,3 +22,39 @@ def bitlify(value):
     except AttributeError:
         # Fail silently
         pass
+        
+@register.filter
+def clicks(value):
+    """
+    Retrieves Bittle object for passed object, or fails silently. Returns the
+    number of clicks that object has logged in bit.ly stats.
+    """
+    
+    try:
+        bittle = Bittle.objects.bitlify(value)
+        if bittle:
+            clicks = bittle.clicks
+        else:
+            clicks = "n/a"
+            
+        return clicks
+    except:
+        pass
+
+@register.filter
+def referrers(value):
+    """
+    Save as clicks filter but returns list of Referrer objects rather than
+    number of clicks.
+    """
+    
+    try:
+        bittle = Bittle.objects.bitlify(value)
+        if bittle:
+            referrers = bittle.referrers
+        else:
+            referrers = None
+            
+        return referrers
+    except:
+        pass

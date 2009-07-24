@@ -1,14 +1,14 @@
 from django.conf.urls.defaults import *
 from django.views.generic import list_detail
-from django_bitly.models import Bittle
+from testapp.models import TestModel
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
-def get_bittles():
-    return Bittle.objects.all()
-bittle_dict = {'queryset': get_bittles()}
+def get_objects():
+    return TestModel.objects.all()
+object_dict = {'queryset': get_objects()}
 
 urlpatterns = patterns('',
     # Example:
@@ -21,6 +21,6 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     (r'^admin/(.*)', admin.site.root),
     
-    (r'^$', list_detail.object_list, bittle_dict),
-    url(r'^(?P<object_id>\w+)/$', list_detail.object_detail, bittle_dict, name="bittle"),
+    (r'^$', list_detail.object_list, object_dict),
+    url(r'^(?P<object_id>\w+)/$', list_detail.object_detail, object_dict, name="test"),
 )
