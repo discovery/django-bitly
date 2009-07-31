@@ -60,5 +60,5 @@ setup(
         'django_bitly',
         ],
     provides=['django_bitly'],
-    requires=['django (>=1.0)', 'simplejson',],
+    requires=['django (>=1.1)', 'simplejson',],
     )
