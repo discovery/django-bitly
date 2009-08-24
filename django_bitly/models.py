@@ -23,11 +23,15 @@ class BittleManager(models.Manager):
         work.
         """
         
+        print "foo"
+        
         # If the object does not have a get_absolute_url() method or the
         # Bit.ly API authentication settings are not in settings.py, fail.
         if not (hasattr(obj, 'get_absolute_url') and settings.BITLY_LOGIN and settings.BITLY_API_KEY):
             print "Object '%s' does not have a 'get_absolute_url' method." % obj.__unicode__()
             return False
+        else:
+            print obj.get_absolute_url()
             
         try:
             content_type = ContentType.objects.get_for_model(obj)
