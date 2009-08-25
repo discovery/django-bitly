@@ -15,6 +15,9 @@ class StringHolder(models.Model):
     """
     absolute_url = models.URLField(verify_exists=True)
     
+    def __unicode__(self):
+        return u"StringHolder object for %s" % self.absolute_url
+    
     def get_absolute_url(self):
         return self.absolute_url
 
