@@ -37,7 +37,7 @@ class BittleManager(models.Manager):
         """
         
         if isinstance(obj, basestring):
-            obj = StringHolder.objects.get_or_create(absolute_url=obj)
+            obj, created = StringHolder.objects.get_or_create(absolute_url=obj)
                 
         # If the object does not have a get_absolute_url() method or the
         # Bit.ly API authentication settings are not in settings.py, fail.
