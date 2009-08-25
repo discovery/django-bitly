@@ -8,6 +8,16 @@ import urllib, urllib2, datetime
 import simplejson as json
 
 # Create your models here.
+class StringHolder(models.Model):
+    """
+    A helper model that allows you to create a Bittle with just a URL in a
+    string rather than a Django object defining get_absolute_url().
+    """
+    absolute_url = models.URLField(verify_exists=True)
+    
+    def get_absolute_url(self):
+        return self.absolute_url
+
 class BittleManager(models.Manager):
     """
     Custom manager for the ``Bittle`` model.
@@ -22,6 +32,9 @@ class BittleManager(models.Manager):
         The object must have a ``get_absolute_url`` in order for this to
         work.
         """
+        
+        if isinstance(obj, basestring):
+            obj = StringHolder.objects.get_or_create(absolute_url=obj)
                 
         # If the object does not have a get_absolute_url() method or the
         # Bit.ly API authentication settings are not in settings.py, fail.
