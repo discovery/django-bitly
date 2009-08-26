@@ -45,12 +45,15 @@ class BittleManager(models.Manager):
             print "Object '%s' does not have a 'get_absolute_url' method." % obj.__unicode__()
             return False
             
+        current_domain = Site.objects.get_current().domain
+        url = "http://%s%s" % (current_domain, obj.get_absolute_url())
+
         try:
             content_type = ContentType.objects.get_for_model(obj)
             bittle = Bittle.objects.get(content_type=content_type, object_id=obj.id)
-
+        
             # Check if the absolute_url for the object has changed.
-            if bittle.absolute_url != obj.get_absolute_url():
+            if bittle.absolute_url != url:
                 # If Django redirects are enabled and set up a redirect from
                 # the old absolute url to the new one. Old Bittle should be
                 # kept so that we still have access to its stats, but that
@@ -62,9 +65,6 @@ class BittleManager(models.Manager):
             return bittle
         except:
             pass
-        
-        current_domain = Site.objects.get_current().domain
-        url = "http://%s%s" % (current_domain, obj.get_absolute_url())
         
         create_api = 'http://api.bit.ly/shorten'
         data = urllib.urlencode(dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY, history=1))
