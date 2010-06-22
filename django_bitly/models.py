@@ -3,9 +3,9 @@ from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.conf import settings
+from django.utils import simplejson as json
 
 import urllib, urllib2, datetime
-import simplejson as json
 
 # Create your models here.
 class StringHolder(models.Model):
