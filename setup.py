@@ -35,7 +35,7 @@ from distutils.core import setup
 
 
 description, long_description = __doc__.split('\n\n', 1)
-VERSION = '0.4'
+VERSION = '0.5'
 
 setup(
     name='django-bitly',
@@ -47,7 +47,7 @@ setup(
     license='BSD',
     platforms=['any'],
     url='http://bitbucket.org/discovery/django-bitly/',
-    download_url=("http://bitbucket.org/discovery/django-bitly/get/0.4.bz2"),
+    download_url=("http://bitbucket.org/discovery/django-bitly/get/0.5.bz2"),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
