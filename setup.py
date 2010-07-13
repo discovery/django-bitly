@@ -41,6 +41,7 @@ setup(
     name='django-bitly',
     version=VERSION,
     author='Discovery Creative',
+    author_email='webworks_support@discovery.com',
     description=description,
     long_description=long_description,
     license='BSD',
