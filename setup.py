@@ -59,6 +59,7 @@ setup(
         ],
     packages=[
         'django_bitly',
+        'django_bitly.templatetags',
         ],
     provides=['django_bitly'],
     requires=['django (>=1.1)', 'simplejson',],
