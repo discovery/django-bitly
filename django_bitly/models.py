@@ -1,3 +1,5 @@
+import urllib, urllib2, datetime
+
 from django.db import models
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
@@ -5,7 +7,7 @@ from django.contrib.contenttypes import generic
 from django.conf import settings
 from django.utils import simplejson as json
 
-import urllib, urllib2, datetime
+from .exceptions import BittleException
 
 # Create your models here.
 class StringHolder(models.Model):
@@ -42,8 +44,8 @@ class BittleManager(models.Manager):
         # If the object does not have a get_absolute_url() method or the
         # Bit.ly API authentication settings are not in settings.py, fail.
         if not (hasattr(obj, 'get_absolute_url') and settings.BITLY_LOGIN and settings.BITLY_API_KEY):
-            print "Object '%s' does not have a 'get_absolute_url' method." % obj.__unicode__()
-            return False
+            raise BittleException("Object '%s' does not have a 'get_absolute_url' method." 
+                                    % obj.__unicode__())
             
         current_domain = Site.objects.get_current().domain
         url = "http://%s%s" % (current_domain, obj.get_absolute_url())
@@ -76,8 +78,7 @@ class BittleManager(models.Manager):
             bittle.save()
             return bittle
         else:
-            print "Failed secondary: %s" % link
-            return False
+            raise BittleException("Failed secondary: %s" % link)
     
 class Bittle(models.Model):
     """An object representing a Bit.ly link to a local object."""
