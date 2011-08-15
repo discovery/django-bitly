@@ -1,7 +1,9 @@
 from django.template import Library
+from django.conf import settings
 # from django.template.defaultfilters import urlencode
 
 from django_bitly.models import Bittle
+from django_bitly.exceptions import BittleException
 
 import urllib, urllib2
 
@@ -13,15 +15,20 @@ def bitlify(value):
     Gets or create a Bittle object for the passed object. If unable to get
     Bittle and/or create bit.ly, will just return the get_absolute_url value.
     """
-    
+
+    fallback_absolute_url = getattr(settings, 'BITLY_FALLBACK_ABSOLUTE_URL', False)
     try:
         bittle = Bittle.objects.bitlify(value)
         if bittle:
             url = bittle.shortUrl
         else:
             url = value.get_absolute_url
-    
         return url
+    except BittleException:
+        if fallback_absolute_url:
+            url = value.get_absolute_url
+            return url
+        raise
     except Bittle.DoesNotExist:
         # Fail silently
         pass
