@@ -26,7 +26,7 @@ def bitlify(value):
         return url
     except BittleException:
         if fallback_absolute_url:
-            url = value.get_absolute_url
+            url = value.get_absolute_url()
             return url
         raise
     except Bittle.DoesNotExist:
