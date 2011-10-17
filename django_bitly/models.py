@@ -115,7 +115,7 @@ class Bittle(models.Model):
         if stamp is None or now-stamp > timeout:
             create_api = "http://api.bit.ly/stats"
             data = urllib.urlencode(dict(version="2.0.1", hash=self.hash, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY))
-            link = urllib2.urlopen(create_api, data=data).read().strip()
+            link = urllib2.urlopen('%s?%s' % (create_api, data)).read().strip()
             self.statstring = link
             self.statstamp = now
             self.save()
