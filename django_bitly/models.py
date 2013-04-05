@@ -15,8 +15,8 @@ class StringHolder(models.Model):
     A helper model that allows you to create a Bittle with just a URL in a
     string rather than a Django object defining get_absolute_url().
     """
-    absolute_url = models.URLField(verify_exists=True)
-    
+    absolute_url = models.URLField()
+
     def __unicode__(self):
         return u"StringHolder object for %s" % self.absolute_url
     
@@ -88,11 +88,11 @@ class Bittle(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
-    absolute_url = models.URLField(verify_exists=True)
-    
+    absolute_url = models.URLField()
+
     hash = models.CharField(max_length=10)
-    shortKeywordUrl = models.URLField(blank=True, verify_exists=True)
-    shortUrl = models.URLField(verify_exists=True)
+    shortKeywordUrl = models.URLField(blank=True)
+    shortUrl = models.URLField()
     userHash = models.CharField(max_length=10)
     
     statstring = models.TextField(blank=True, editable=False)
