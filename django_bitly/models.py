@@ -48,7 +48,10 @@ class BittleManager(models.Manager):
                 
         # If the object does not have a get_absolute_url() method or the
         # Bit.ly API authentication settings are not in settings.py, fail.
-        if not (hasattr(obj, 'get_absolute_url') and settings.BITLY_LOGIN and settings.BITLY_API_KEY):
+        if not (settings.BITLY_LOGIN and settings.BITLY_API_KEY):
+            raise BittleException("Bit.ly credentials not found in settings.")
+
+        if not hasattr(obj, 'get_absolute_url'):
             raise BittleException("Object '%s' does not have a 'get_absolute_url' method." 
                                     % obj.__unicode__())
             
