@@ -16,7 +16,6 @@ def bitlify(value):
     Bittle and/or create bit.ly, will just return the get_absolute_url value.
     """
 
-    fallback_absolute_url = getattr(settings, 'BITLY_FALLBACK_ABSOLUTE_URL', False)
     try:
         bittle = Bittle.objects.bitlify(value)
         if bittle:
@@ -24,14 +23,8 @@ def bitlify(value):
         else:
             url = value.get_absolute_url
         return url
-    except BittleException:
-        if fallback_absolute_url:
-            url = value.get_absolute_url()
-            return url
-        raise
-    except Bittle.DoesNotExist:
-        # Fail silently
-        pass
+    except (BittleException, Bittle.DoesNotExist):
+        return value.get_absolute_url()
 
 
 @register.filter
