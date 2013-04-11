@@ -1,0 +1,6 @@
+syntax:glob
+.DS_Store
+*.pyc
+migrations
+local_settings.py
+notes.txt
