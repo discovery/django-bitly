@@ -4,6 +4,4 @@
 
 # get python libs
 -r libs.txt
-
-# editable checkouts
--e svn+http://code.djangoproject.com/svn/django/tags/releases/1.0.2/#egg=django
+django==1.5.1

@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-from django.views.generic import list_detail
+from django.views.generic import ListView, DetailView
 from testapp.models import TestModel
 
 # Uncomment the next two lines to enable the admin:
@@ -21,6 +21,6 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     ('^admin/', include(admin.site.urls)),
     
-    (r'^$', list_detail.object_list, object_dict),
-    url(r'^(?P<object_id>\w+)/$', list_detail.object_detail, object_dict, name="test"),
+    (r'^$', ListView.as_view(**object_dict)),
+    url(r'^(?P<pk>\w+)/$', DetailView.as_view(**object_dict), name="test"),
 )
