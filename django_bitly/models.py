@@ -65,7 +65,7 @@ class BittleManager(models.Manager):
                 bittle = Bittle.objects.bitlify(obj)
                 
             return bittle
-        except:
+        except Bittle.DoesNotExist:
             pass
         
         create_api = 'http://api.bit.ly/shorten'
