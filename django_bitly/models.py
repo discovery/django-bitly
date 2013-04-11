@@ -13,6 +13,7 @@ from django.contrib.contenttypes import generic
 from django.conf import settings
 from django.utils import simplejson as json
 
+from .conf import BITLY_TIMEOUT
 from .exceptions import BittleException
 
 
@@ -81,7 +82,7 @@ class BittleManager(models.Manager):
 
         create_api = 'http://api.bit.ly/shorten'
         data = urllib.urlencode(dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY, history=1))
-        link = json.loads(urllib2.urlopen(create_api, data=data).read().strip())
+        link = json.loads(urllib2.urlopen(create_api, data=data, timeout=BITLY_TIMEOUT).read().strip())
 
         if link["errorCode"] == 0 and link["statusCode"] == "OK":
             results = link["results"][url]
@@ -126,7 +127,7 @@ class Bittle(models.Model):
         if stamp is None or now - stamp > timeout:
             create_api = "http://api.bit.ly/stats"
             data = urllib.urlencode(dict(version="2.0.1", hash=self.hash, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY))
-            link = urllib2.urlopen('%s?%s' % (create_api, data)).read().strip()
+            link = urllib2.urlopen('%s?%s' % (create_api, data), timeout=BITLY_TIMEOUT).read().strip()
             self.statstring = link
             self.statstamp = now
             self.save()
