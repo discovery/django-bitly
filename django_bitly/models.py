@@ -1,4 +1,5 @@
-import urllib, urllib2
+import urllib
+import urllib2
 from datetime import timedelta
 try:
     from django.utils import timezone as datetime
@@ -14,6 +15,7 @@ from django.utils import simplejson as json
 
 from .exceptions import BittleException
 
+
 # Create your models here.
 class StringHolder(models.Model):
     """
@@ -24,44 +26,45 @@ class StringHolder(models.Model):
 
     def __unicode__(self):
         return u"StringHolder object for %s" % self.absolute_url
-    
+
     def get_absolute_url(self):
         return self.absolute_url
+
 
 class BittleManager(models.Manager):
     """
     Custom manager for the ``Bittle`` model.
-    
+
     Defines methods to provide shortcuts for creation and management of
     Bit.ly links to local objects.
     """
-    
+
     def bitlify(self, obj):
         """
         Creates a new ``Bittle`` object based on the object passed to it.
         The object must have a ``get_absolute_url`` in order for this to
         work.
         """
-        
+
         if isinstance(obj, basestring):
             obj, created = StringHolder.objects.get_or_create(absolute_url=obj)
-                
+
         # If the object does not have a get_absolute_url() method or the
         # Bit.ly API authentication settings are not in settings.py, fail.
         if not (settings.BITLY_LOGIN and settings.BITLY_API_KEY):
             raise BittleException("Bit.ly credentials not found in settings.")
 
         if not hasattr(obj, 'get_absolute_url'):
-            raise BittleException("Object '%s' does not have a 'get_absolute_url' method." 
-                                    % obj.__unicode__())
-            
+            raise BittleException("Object '%s' does not have a 'get_absolute_url' method."
+                % obj.__unicode__())
+
         current_domain = Site.objects.get_current().domain
         url = "http://%s%s" % (current_domain, obj.get_absolute_url())
 
         try:
             content_type = ContentType.objects.get_for_model(obj)
             bittle = Bittle.objects.get(content_type=content_type, object_id=obj.id)
-        
+
             # Check if the absolute_url for the object has changed.
             if bittle.absolute_url != url:
                 # If Django redirects are enabled and set up a redirect from
@@ -71,15 +74,15 @@ class BittleManager(models.Manager):
                 # For now we'll delete the old Bittle and create a new one.
                 bittle.delete()
                 bittle = Bittle.objects.bitlify(obj)
-                
+
             return bittle
         except Bittle.DoesNotExist:
             pass
-        
+
         create_api = 'http://api.bit.ly/shorten'
         data = urllib.urlencode(dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY, history=1))
         link = json.loads(urllib2.urlopen(create_api, data=data).read().strip())
-        
+
         if link["errorCode"] == 0 and link["statusCode"] == "OK":
             results = link["results"][url]
             bittle = Bittle(content_object=obj, absolute_url=url, hash=results["hash"], shortKeywordUrl=results["shortKeywordUrl"], shortUrl=results["shortUrl"], userHash=results["userHash"])
@@ -87,12 +90,10 @@ class BittleManager(models.Manager):
             return bittle
         else:
             raise BittleException("Failed secondary: %s" % link)
-    
+
+
 class Bittle(models.Model):
     """An object representing a Bit.ly link to a local object."""
-    
-    objects = BittleManager()
-    
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
@@ -102,25 +103,27 @@ class Bittle(models.Model):
     shortKeywordUrl = models.URLField(blank=True)
     shortUrl = models.URLField()
     userHash = models.CharField(max_length=10)
-    
+
     statstring = models.TextField(blank=True, editable=False)
     statstamp = models.DateTimeField(blank=True, null=True, editable=False)
-    
+
     # Timestamps
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
-    
+
+    objects = BittleManager()
+
     class Meta:
-        ordering = ["-date_created",]
-    
+        ordering = ("-date_created",)
+
     def __unicode__(self):
         return self.hash
-        
+
     def _get_stats(self):
         now = datetime.now()
         stamp = self.statstamp
         timeout = timedelta(minutes=30)
-        if stamp is None or now-stamp > timeout:
+        if stamp is None or now - stamp > timeout:
             create_api = "http://api.bit.ly/stats"
             data = urllib.urlencode(dict(version="2.0.1", hash=self.hash, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY))
             link = urllib2.urlopen('%s?%s' % (create_api, data)).read().strip()
@@ -130,26 +133,26 @@ class Bittle(models.Model):
 
         return json.loads(self.statstring)["results"]
     stats = property(_get_stats)
-    
+
     def _get_clicks(self):
         return self.stats["clicks"]
     clicks = property(_get_clicks)
-    
+
     def _get_referrers(self):
         class Referrer:
             domain = ""
             links = []
-            
+
             def __init__(self, domain, links):
                 self.domain = domain
                 self.links = [(url, links[url]) for url in links]
-            
+
             def __unicode__(self):
                 if self.domain == "" and self.links[0][0] == "direct":
                     return "direct"
                 elif self.domain != "":
                     return self.domain
-        
+
         referrers = self.stats["referrers"]
         referrer_list = [Referrer(domain, referrers[domain]) for domain in referrers]
         return referrer_list

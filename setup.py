@@ -55,11 +55,11 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        ],
+    ],
     packages=[
         'django_bitly',
         'django_bitly.templatetags',
-        ],
+    ],
     provides=['django_bitly'],
-    requires=['django (>=1.3)', 'simplejson',],
-    )
+    requires=['django (>=1.3)', 'simplejson'],
+)

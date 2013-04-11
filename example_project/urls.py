@@ -20,7 +20,7 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     ('^admin/', include(admin.site.urls)),
-    
+
     (r'^$', ListView.as_view(**object_dict)),
     url(r'^(?P<pk>\w+)/$', DetailView.as_view(**object_dict), name="test"),
 )
