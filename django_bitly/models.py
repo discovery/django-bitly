@@ -1,4 +1,9 @@
-import urllib, urllib2, datetime
+import urllib, urllib2
+from datetime import timedelta
+try:
+    from django.utils import timezone as datetime
+except ImportError:
+    from datetime import datetime
 
 from django.db import models
 from django.contrib.sites.models import Site
@@ -109,9 +114,9 @@ class Bittle(models.Model):
         return self.hash
         
     def _get_stats(self):
-        now = datetime.datetime.now()
+        now = datetime.now()
         stamp = self.statstamp
-        timeout = datetime.timedelta(minutes=30)
+        timeout = timedelta(minutes=30)
         if stamp is None or now-stamp > timeout:
             create_api = "http://api.bit.ly/stats"
             data = urllib.urlencode(dict(version="2.0.1", hash=self.hash, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY))
