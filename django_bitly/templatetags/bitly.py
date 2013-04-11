@@ -47,7 +47,7 @@ def clicks(value):
 @register.filter
 def referrers(value):
     """
-    Save as clicks filter but returns list of Referrer objects rather than
+    Same as clicks filter but returns list of Referrer objects rather than
     number of clicks.
     """
     try:
