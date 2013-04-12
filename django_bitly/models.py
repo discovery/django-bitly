@@ -39,10 +39,16 @@ class BittleManager(models.Manager):
     Defines methods to provide shortcuts for creation and management of
     Bit.ly links to local objects.
     """
-    def get_for_instance(self, obj):
+    def filter_for_instance(self, obj):
         app_label = obj._meta.app_label
         model = obj._meta.module_name
-        return self.get(content_type__app_label=app_label, content_type__model=model, object_id=obj.pk)
+        return self.filter(content_type__app_label=app_label, content_type__model=model, object_id=obj.pk)
+
+    def get_for_instance(self, obj):
+        try:
+            return self.filter_for_instance(obj)[0]
+        except IndexError:
+            raise self.model.DoesNotExist
 
     def bitlify(self, obj):
         """
