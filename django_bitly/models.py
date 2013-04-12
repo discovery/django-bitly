@@ -50,7 +50,7 @@ class BittleManager(models.Manager):
         except IndexError:
             raise self.model.DoesNotExist
 
-    def bitlify(self, obj):
+    def bitlify(self, obj, scheme='http'):
         """
         Creates a new ``Bittle`` object based on the object passed to it.
         The object must have a ``get_absolute_url`` in order for this to
@@ -70,7 +70,7 @@ class BittleManager(models.Manager):
                 % obj.__unicode__())
 
         current_domain = Site.objects.get_current().domain
-        url = "http://%s%s" % (current_domain, obj.get_absolute_url())
+        url = "%s://%s%s" % (scheme, current_domain, obj.get_absolute_url())
 
         try:
             bittle = Bittle.objects.get_for_instance(obj)
