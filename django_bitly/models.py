@@ -39,6 +39,10 @@ class BittleManager(models.Manager):
     Defines methods to provide shortcuts for creation and management of
     Bit.ly links to local objects.
     """
+    def get_for_instance(self, obj):
+        app_label = obj._meta.app_label
+        model = obj._meta.module_name
+        return self.get(content_type__app_label=app_label, content_type__model=model, object_id=obj.pk)
 
     def bitlify(self, obj):
         """
@@ -63,8 +67,7 @@ class BittleManager(models.Manager):
         url = "http://%s%s" % (current_domain, obj.get_absolute_url())
 
         try:
-            content_type = ContentType.objects.get_for_model(obj)
-            bittle = Bittle.objects.get(content_type=content_type, object_id=obj.id)
+            bittle = Bittle.objects.get_for_instance(obj)
 
             # Check if the absolute_url for the object has changed.
             if bittle.absolute_url != url:
