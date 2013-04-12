@@ -14,6 +14,10 @@ Installation
 
 Add ``'django_bitly'`` to your ``INSTALLED_APPS``.
 
+::
+
+    $ django-admin.py syncdb
+
 Define the following settings:
 
 ``BITLY_LOGIN``
