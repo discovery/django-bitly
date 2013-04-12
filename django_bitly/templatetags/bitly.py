@@ -1,5 +1,4 @@
 from django.template import Library
-from django.conf import settings
 
 from django_bitly.models import Bittle
 from django_bitly.exceptions import BittleException
