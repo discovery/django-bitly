@@ -24,6 +24,8 @@ Define the following settings:
 Usage
 -----
 
+Template Filters
+~~~~~~~~~~~~~~~~
 ::
 
     {% load bitly %}
@@ -46,6 +48,20 @@ Available filters:
 
 ``referrer_chart``
     Works like ``referrers``, but returns the URL for a Google charts pie chart.
+
+Models
+~~~~~~
+
+You can use the ``bitlify`` manager method to create short urls for your model instances::
+
+    >>> from bitly.models import Bittle
+    >>> from myapp.models import MyModel
+    
+    >>> myobj = MyModel.objects.get(pk=1)
+    >>> bittle = Bittle.objects.bitlify(myobj)
+    >>> bittle.shortUrl
+    'http://bit.ly/abcd1234'
+
 
 Settings
 --------
