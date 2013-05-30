@@ -1,3 +1,4 @@
+import re
 import urllib
 import urllib2
 from datetime import timedelta
@@ -70,7 +71,30 @@ class BittleManager(models.Manager):
                 % obj.__unicode__())
 
         current_domain = Site.objects.get_current().domain
-        url = "%s://%s%s" % (scheme, current_domain, obj.get_absolute_url())
+
+        obj_url = obj.get_absolute_url()
+        if re.match(r'^(aim|apt|bitcoin|callto|cid|data|dav|fax|feed|geo|go|h323|iax|im|magnet|mailto|message|mid|msnim|mvn|news|palm|paparazzi|pres|proxy|query|session|sip|sips|skype|sms|spotify|steam|tag|tel|things|urn|uuid|view-source|ws|wyciwyg|xmpp|ymsgr):', obj_url, re.IGNORECASE):
+            # These are the URI Schemes that can be legitimately used with no slashes:
+            # http://en.wikipedia.org/wiki/URI_scheme
+            # Treat these as ready-to-go
+            url = obj_url
+        elif re.match(r'(attachment|platform):/', obj_url, re.IGNORECASE):
+            # These can be used with only one forward slash
+            # Treat these as ready-to-go
+            url = obj_url
+        elif re.match(r'^[^:/]+://', obj_url, re.IGNORECASE):
+            # These are meant to be used with double-forward-slashes
+            # Treat these as ready-to-go
+            url = obj_url
+        elif re.match(r'^//', obj_url, re.IGNORECASE):
+            # If this is schemeless, fully-qualified URL, sometimes used to
+            # avoid mixed-scheme webpage issues (particularly, http/https
+            # security issues).  We'll need an actual scheme for this though,
+            # so we'll use whatever they pass into the kwarg: scheme.
+            url = "%s:%s" % (scheme, obj_url)
+        else:
+            # Normal, relative ("absolute" in Django-speak) URLs
+            url = "%s://%s%s" % (scheme, current_domain, obj_url)
 
         try:
             bittle = Bittle.objects.get_for_instance(obj)
