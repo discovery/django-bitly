@@ -125,9 +125,10 @@ class BittleManager(models.Manager):
         if link["errorCode"] == 0 and link["statusCode"] == "OK":
             results = link["results"][url]
             bittle, created = Bittle.objects.get_or_create(
-                content_object=obj,
-                absolute_url=url,
+                content_type=ContentType.objects.get_for_model(obj.__class__),
+                object_id=obj.pk,
                 defaults={
+                    'absolute_url': url,
                     'hash': results["hash"],
                     'shortKeywordUrl': results["shortKeywordUrl"],
                     'shortUrl': results["shortUrl"],
