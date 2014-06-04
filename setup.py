@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # django-bitly -  Bit.ly integration for django
-# 
+#
 # Copyright (C) 2009 Discovery Creative
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ from distutils.core import setup
 
 
 description, long_description = __doc__.split('\n\n', 1)
-VERSION = '0.8'
+VERSION = '0.8.1'
 
 setup(
     name='django-bitly',

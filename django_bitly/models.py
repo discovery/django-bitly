@@ -18,7 +18,6 @@ from .conf import BITLY_TIMEOUT
 from .exceptions import BittleException
 
 
-# Create your models here.
 class StringHolder(models.Model):
     """
     A helper model that allows you to create a Bittle with just a URL in a
@@ -40,16 +39,11 @@ class BittleManager(models.Manager):
     Defines methods to provide shortcuts for creation and management of
     Bit.ly links to local objects.
     """
-    def filter_for_instance(self, obj):
-        app_label = obj._meta.app_label
-        model = obj._meta.module_name
-        return self.filter(content_type__app_label=app_label, content_type__model=model, object_id=obj.pk)
-
     def get_for_instance(self, obj):
-        try:
-            return self.filter_for_instance(obj)[0]
-        except IndexError:
-            raise self.model.DoesNotExist
+        return self.get(
+            content_type=ContentType.objects.get_for_model(obj.__class__),
+            object_id=obj.pk
+        )
 
     def bitlify(self, obj, scheme='http'):
         """
@@ -63,7 +57,7 @@ class BittleManager(models.Manager):
 
         # If the object does not have a get_absolute_url() method or the
         # Bit.ly API authentication settings are not in settings.py, fail.
-        if not (settings.BITLY_LOGIN and settings.BITLY_API_KEY):
+        if not settings.DEBUG and not (settings.BITLY_LOGIN and settings.BITLY_API_KEY):
             raise BittleException("Bit.ly credentials not found in settings.")
 
         if not hasattr(obj, 'get_absolute_url'):
@@ -113,14 +107,35 @@ class BittleManager(models.Manager):
         except Bittle.DoesNotExist:
             pass
 
+        if settings.DEBUG and not (settings.BITLY_LOGIN and settings.BITLY_API_KEY):
+            # In debug mode, if settings have been omitted, return a fake bittle
+            return Bittle(
+                content_object=obj,
+                absolute_url=url,
+                hash='',
+                shortKeywordUrl=obj_url,
+                shortUrl=url,
+                userHash=''
+            )
+
         create_api = 'http://api.bit.ly/shorten'
         data = urllib.urlencode(dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY, history=1))
         link = json.loads(urllib2.urlopen(create_api, data=data, timeout=BITLY_TIMEOUT).read().strip())
 
         if link["errorCode"] == 0 and link["statusCode"] == "OK":
             results = link["results"][url]
-            bittle = Bittle(content_object=obj, absolute_url=url, hash=results["hash"], shortKeywordUrl=results["shortKeywordUrl"], shortUrl=results["shortUrl"], userHash=results["userHash"])
-            bittle.save()
+            bittle, created = Bittle.objects.get_or_create(
+                content_object=obj,
+                absolute_url=url,
+                defaults={
+                    'hash': results["hash"],
+                    'shortKeywordUrl': results["shortKeywordUrl"],
+                    'shortUrl': results["shortUrl"],
+                    'userHash': results["userHash"]
+                }
+            )
+            if not created:
+                bittle.save()
             return bittle
         else:
             raise BittleException("Failed secondary: %s" % link)
@@ -149,6 +164,7 @@ class Bittle(models.Model):
 
     class Meta:
         ordering = ("-date_created",)
+        unique_together = (('content_type', 'object_id'),)
 
     def __unicode__(self):
         return self.hash
