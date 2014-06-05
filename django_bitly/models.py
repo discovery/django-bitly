@@ -40,10 +40,14 @@ class BittleManager(models.Manager):
     Bit.ly links to local objects.
     """
     def get_for_instance(self, obj):
-        return self.get(
+        # Can't guarantee uniqueness yet due to previous bug
+        bittles = self.filter(
             content_type=ContentType.objects.get_for_model(obj.__class__),
             object_id=obj.pk
         )
+        if bittles:
+            return bittles[0]
+        raise self.model.DoesNotExist
 
     def bitlify(self, obj, scheme='http'):
         """
