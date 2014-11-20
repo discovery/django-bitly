@@ -134,7 +134,7 @@ class Bittle(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
-    absolute_url = models.URLField()
+    absolute_url = models.URLField(max_length=1024)
 
     hash = models.CharField(max_length=10)
     shortKeywordUrl = models.URLField(blank=True)
