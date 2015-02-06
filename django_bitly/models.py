@@ -1,6 +1,9 @@
 import re
 import urllib
-import urllib2
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 from datetime import timedelta
 try:
     from django.utils import timezone as datetime
@@ -12,7 +15,10 @@ from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.conf import settings
-from django.utils import simplejson as json
+try:
+    from django.utils import simplejson as json
+except ImportError:
+    import json
 
 from .conf import BITLY_TIMEOUT
 from .exceptions import BittleException
