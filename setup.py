@@ -61,5 +61,5 @@ setup(
         'django_bitly.templatetags',
     ],
     provides=['django_bitly'],
-    requires=['django (>=1.3)'],
+    install_requires=['django>=1.3'],
 )
