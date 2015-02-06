@@ -1,4 +1,5 @@
 import re
+import six
 import urllib
 try:
     import urllib.request as urllib2
@@ -64,7 +65,7 @@ class BittleManager(models.Manager):
         work.
         """
 
-        if isinstance(obj, basestring):
+        if isinstance(obj, six.string_types):
             obj, created = StringHolder.objects.get_or_create(absolute_url=obj)
 
         # If the object does not have a get_absolute_url() method or the
