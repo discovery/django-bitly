@@ -1,6 +1,10 @@
 import re
 import urllib
 try:
+    from pyparsing import basestring
+except ImportError:
+    pass
+try:
     import urllib.request as urllib2
 except ImportError:
     import urllib2
