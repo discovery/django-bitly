@@ -117,7 +117,7 @@ class BittleManager(models.Manager):
                 # will mean handling multiple Bittles for any given object.
                 # For now we'll delete the old Bittle and create a new one.
                 bittle.delete()
-                bittle = Bittle.objects.bitlify(obj)
+                bittle = Bittle.objects.bitlify(obj, scheme=scheme)
 
             return bittle
         except Bittle.DoesNotExist:
