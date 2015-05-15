@@ -1,6 +1,10 @@
 import re
+import six
 import urllib
-import urllib2
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 from datetime import timedelta
 try:
     from django.utils import timezone as datetime
@@ -12,7 +16,10 @@ from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.conf import settings
-from django.utils import simplejson as json
+try:
+    from django.utils import simplejson as json
+except ImportError:
+    import json
 
 from .conf import BITLY_TIMEOUT
 from .exceptions import BittleException
@@ -56,7 +63,7 @@ class BittleManager(models.Manager):
         work.
         """
 
-        if isinstance(obj, basestring):
+        if isinstance(obj, six.string_types):
             obj, created = StringHolder.objects.get_or_create(absolute_url=obj)
 
         # If the object does not have a get_absolute_url() method or the
@@ -79,6 +86,9 @@ class BittleManager(models.Manager):
         elif re.match(r'(attachment|platform):/', obj_url, re.IGNORECASE):
             # These can be used with only one forward slash
             # Treat these as ready-to-go
+            url = obj_url
+        elif re.match(r'^https?://', obj_url, re.IGNORECASE):
+            # This is an HTTP link, just send it through.
             url = obj_url
         elif re.match(r'^[^:/]+://', obj_url, re.IGNORECASE):
             # These are meant to be used with double-forward-slashes
@@ -105,7 +115,7 @@ class BittleManager(models.Manager):
                 # will mean handling multiple Bittles for any given object.
                 # For now we'll delete the old Bittle and create a new one.
                 bittle.delete()
-                bittle = Bittle.objects.bitlify(obj)
+                bittle = Bittle.objects.bitlify(obj, scheme=scheme)
 
             return bittle
         except Bittle.DoesNotExist:

@@ -58,7 +58,7 @@ Models
 
 You can use the ``bitlify`` manager method to create short urls for your model instances::
 
-    >>> from bitly.models import Bittle
+    >>> from django_bitly.models import Bittle
     >>> from myapp.models import MyModel
     
     >>> myobj = MyModel.objects.get(pk=1)
