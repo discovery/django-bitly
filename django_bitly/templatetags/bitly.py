@@ -1,3 +1,5 @@
+import six
+
 from django.template import Library
 
 from django_bitly.models import Bittle
@@ -23,7 +25,7 @@ def bitlify(value):
             url = value.get_absolute_url
         return url
     except (BittleException, Bittle.DoesNotExist):
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             return value
         else:
             return value.get_absolute_url()
