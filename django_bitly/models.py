@@ -14,7 +14,7 @@ except ImportError:
 from django.db import models
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes import fields
 from django.conf import settings
 try:
     from django.utils import simplejson as json
@@ -140,7 +140,7 @@ class Bittle(models.Model):
     """An object representing a Bit.ly link to a local object."""
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = fields.GenericForeignKey('content_type', 'object_id')
     absolute_url = models.URLField()
 
     hash = models.CharField(max_length=10)
