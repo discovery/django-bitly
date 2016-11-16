@@ -4,4 +4,4 @@
 
 # get python libs
 -r libs.txt
-django==1.5.1
+django>=1.8.0

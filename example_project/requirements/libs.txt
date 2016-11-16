@@ -1,3 +1,2 @@
 # python libraries
-simplejson
 six
