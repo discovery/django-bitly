@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # django-bitly -  Bit.ly integration for django
-# 
+#
 # Copyright (C) 2009 Discovery Creative
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 """Bit.ly integration for django
 
-A Django app that supports automatic generation and tracking of bit.ly hashes for objects on the site. Will automatically track changes to URLs, and, if necessary, maintain redirects for moved objects.
+A Django app that supports automatic generation and tracking of bit.ly hashes
+for objects on the site. Will automatically track changes to URLs, and, if
+necessary, maintain redirects for moved objects.
 """
 
 from setuptools import setup
@@ -58,6 +60,7 @@ setup(
     ],
     packages=[
         'django_bitly',
+        'django_bitly.migrations',
         'django_bitly.templatetags',
     ],
     provides=['django_bitly'],

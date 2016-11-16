@@ -1,3 +1,5 @@
+import json
+
 import re
 import six
 import urllib
@@ -16,10 +18,6 @@ from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import fields
 from django.conf import settings
-try:
-    from django.utils import simplejson as json
-except ImportError:
-    import json
 
 from .conf import BITLY_TIMEOUT
 from .exceptions import BittleException
@@ -31,7 +29,7 @@ class StringHolder(models.Model):
     A helper model that allows you to create a Bittle with just a URL in a
     string rather than a Django object defining get_absolute_url().
     """
-    absolute_url = models.URLField()
+    absolute_url = models.URLField(max_length=1024)
 
     def __unicode__(self):
         return u"StringHolder object for %s" % self.absolute_url
@@ -47,6 +45,7 @@ class BittleManager(models.Manager):
     Defines methods to provide shortcuts for creation and management of
     Bit.ly links to local objects.
     """
+
     def filter_for_instance(self, obj):
         app_label = obj._meta.app_label
         model = obj._meta.model_name
@@ -141,7 +140,7 @@ class Bittle(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = fields.GenericForeignKey('content_type', 'object_id')
-    absolute_url = models.URLField()
+    absolute_url = models.URLField(max_length=1024)
 
     hash = models.CharField(max_length=10)
     shortKeywordUrl = models.URLField(blank=True)
