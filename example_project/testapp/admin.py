@@ -1,4 +1,4 @@
 from django.contrib import admin
-from django.db.models import get_model
+from .models import TestModel
 
-admin.site.register(get_model('testapp', 'testmodel'))
+admin.site.register(TestModel)
