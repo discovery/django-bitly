@@ -3,3 +3,7 @@ syntax:glob
 *.pyc
 local_settings.py
 notes.txt
+*.egg-info
+dist
+build
+*.db
