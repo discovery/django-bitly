@@ -2,11 +2,15 @@ import json
 
 import re
 import six
-import urllib
+
+# Python 2 and 3: alternative 4
 try:
-    import urllib.request as urllib2
+    from urllib.parse import urlencode
+    from urllib.request import urlopen
 except ImportError:
-    import urllib2
+    from urllib import urlencode
+    from urllib2 import urlopen
+
 from datetime import timedelta
 try:
     from django.utils import timezone as datetime
@@ -123,8 +127,8 @@ class BittleManager(models.Manager):
             pass
 
         create_api = 'http://api.bit.ly/shorten'
-        data = urllib.urlencode(dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY, history=1))
-        link = json.loads(urllib2.urlopen(create_api, data=data, timeout=BITLY_TIMEOUT).read().strip())
+        data = urlencode(dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY, history=1))
+        link = json.loads(urlopen(create_api, data=data, timeout=BITLY_TIMEOUT).read().strip())
 
         if link["errorCode"] == 0 and link["statusCode"] == "OK":
             results = link["results"][url]
@@ -168,17 +172,18 @@ class Bittle(models.Model):
         timeout = timedelta(minutes=30)
         if stamp is None or now - stamp > timeout:
             create_api = "http://api.bit.ly/stats"
-            data = urllib.urlencode(dict(version="2.0.1", hash=self.hash, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY))
-            link = urllib2.urlopen('%s?%s' % (create_api, data), timeout=BITLY_TIMEOUT).read().strip()
+            data = urlencode(dict(version="2.0.1", hash=self.hash, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY))
+            link = urlopen('%s?%s' % (create_api, data), timeout=BITLY_TIMEOUT).read().strip()
             self.statstring = link
             self.statstamp = now
             self.save()
-
         return json.loads(self.statstring)["results"]
+
     stats = property(_get_stats)
 
     def _get_clicks(self):
         return self.stats["clicks"]
+
     clicks = property(_get_clicks)
 
     def _get_referrers(self):
@@ -199,8 +204,9 @@ class Bittle(models.Model):
         referrers = self.stats["referrers"]
         referrer_list = [Referrer(domain, referrers[domain]) for domain in referrers]
         return referrer_list
+
     referrers = property(_get_referrers)
 
     @models.permalink
     def get_absolute_url(self):
-        return ('bittle', [self.id])
+        return 'bittle', [self.id]
