@@ -1,15 +1,8 @@
-import json
+import requests
 
 import re
 import six
 
-# Python 2 and 3: alternative 4
-try:
-    from urllib.parse import urlencode
-    from urllib.request import urlopen
-except ImportError:
-    from urllib import urlencode
-    from urllib2 import urlopen
 
 from datetime import timedelta
 try:
@@ -67,7 +60,6 @@ class BittleManager(models.Manager):
         The object must have a ``get_absolute_url`` in order for this to
         work.
         """
-
         if isinstance(obj, six.string_types):
             obj, created = StringHolder.objects.get_or_create(absolute_url=obj)
 
@@ -110,7 +102,7 @@ class BittleManager(models.Manager):
             url = "%s://%s%s" % (scheme, current_domain, obj_url)
 
         try:
-            bittle = Bittle.objects.get_for_instance(obj)
+            bittle = self.get_for_instance(obj)
 
             # Check if the absolute_url for the object has changed.
             if bittle.absolute_url != url:
@@ -120,16 +112,19 @@ class BittleManager(models.Manager):
                 # will mean handling multiple Bittles for any given object.
                 # For now we'll delete the old Bittle and create a new one.
                 bittle.delete()
-                bittle = Bittle.objects.bitlify(obj, scheme=scheme)
+                bittle = self.model.objects.bitlify(obj, scheme=scheme)
 
             return bittle
-        except Bittle.DoesNotExist:
+        except self.model.DoesNotExist:
             pass
 
         create_api = 'http://api.bit.ly/shorten'
-        data = urlencode(dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY, history=1))
-        link = json.loads(urlopen(create_api, data=data, timeout=BITLY_TIMEOUT).read().strip())
+        data = dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY, history=1)
+        response = requests.post(create_api, data=data, timeout=BITLY_TIMEOUT)
+        if response.status_code != requests.codes.OK:
+            raise BittleException("Failed secondary: %s" % response.status_code)
 
+        link = response.json()
         if link["errorCode"] == 0 and link["statusCode"] == "OK":
             results = link["results"][url]
             bittle = Bittle(content_object=obj, absolute_url=url, hash=results["hash"], shortKeywordUrl=results["shortKeywordUrl"], shortUrl=results["shortUrl"], userHash=results["userHash"])

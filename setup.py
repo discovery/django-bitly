@@ -37,7 +37,7 @@ from setuptools import setup
 
 
 description, long_description = __doc__.split('\n\n', 1)
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 
 setup(
     name='django-bitly',
@@ -64,5 +64,5 @@ setup(
         'django_bitly.templatetags',
     ],
     provides=['django_bitly'],
-    install_requires=['django>=1.8', 'six'],
+    install_requires=['django>=1.8', 'six', 'requests'],
 )
