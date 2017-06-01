@@ -1,14 +1,16 @@
-import requests
-
+import json
 import re
+from datetime import timedelta
+
+import requests
 import six
 
-
-from datetime import timedelta
 try:
-    from django.utils import timezone as datetime
+    from django.utils.timezone import now
 except ImportError:
     from datetime import datetime
+
+    now = datetime.now
 
 from django.db import models
 from django.contrib.sites.models import Site
@@ -46,7 +48,8 @@ class BittleManager(models.Manager):
     def filter_for_instance(self, obj):
         app_label = obj._meta.app_label
         model = obj._meta.model_name
-        return self.filter(content_type__app_label=app_label, content_type__model=model, object_id=obj.pk)
+        return self.filter(content_type__app_label=app_label,
+                           content_type__model=model, object_id=obj.pk)
 
     def get_for_instance(self, obj):
         try:
@@ -69,13 +72,16 @@ class BittleManager(models.Manager):
             raise BittleException("Bit.ly credentials not found in settings.")
 
         if not hasattr(obj, 'get_absolute_url'):
-            raise BittleException("Object '%s' does not have a 'get_absolute_url' method."
+            raise BittleException(
+                "Object '%s' does not have a 'get_absolute_url' method."
                 % obj.__unicode__())
 
         current_domain = Site.objects.get_current().domain
 
         obj_url = obj.get_absolute_url()
-        if re.match(r'^(aim|apt|bitcoin|callto|cid|data|dav|fax|feed|geo|go|h323|iax|im|magnet|mailto|message|mid|msnim|mvn|news|palm|paparazzi|pres|proxy|query|session|sip|sips|skype|sms|spotify|steam|tag|tel|things|urn|uuid|view-source|ws|wyciwyg|xmpp|ymsgr):', obj_url, re.IGNORECASE):
+        if re.match(
+                r'^(aim|apt|bitcoin|callto|cid|data|dav|fax|feed|geo|go|h323|iax|im|magnet|mailto|message|mid|msnim|mvn|news|palm|paparazzi|pres|proxy|query|session|sip|sips|skype|sms|spotify|steam|tag|tel|things|urn|uuid|view-source|ws|wyciwyg|xmpp|ymsgr):',
+                obj_url, re.IGNORECASE):
             # These are the URI Schemes that can be legitimately used with no slashes:
             # http://en.wikipedia.org/wiki/URI_scheme
             # Treat these as ready-to-go
@@ -112,14 +118,15 @@ class BittleManager(models.Manager):
                 # will mean handling multiple Bittles for any given object.
                 # For now we'll delete the old Bittle and create a new one.
                 bittle.delete()
-                bittle = self.model.objects.bitlify(obj, scheme=scheme)
+                return self.bitlify(obj, scheme=scheme)
 
             return bittle
         except self.model.DoesNotExist:
             pass
 
         create_api = 'http://api.bit.ly/shorten'
-        data = dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY, history=1)
+        data = dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN,
+                    apiKey=settings.BITLY_API_KEY, history=1)
         response = requests.post(create_api, data=data, timeout=BITLY_TIMEOUT)
         if response.status_code != requests.codes.OK:
             raise BittleException("Failed secondary: %s" % response.status_code)
@@ -127,7 +134,11 @@ class BittleManager(models.Manager):
         link = response.json()
         if link["errorCode"] == 0 and link["statusCode"] == "OK":
             results = link["results"][url]
-            bittle = Bittle(content_object=obj, absolute_url=url, hash=results["hash"], shortKeywordUrl=results["shortKeywordUrl"], shortUrl=results["shortUrl"], userHash=results["userHash"])
+            bittle = Bittle(content_object=obj, absolute_url=url,
+                            hash=results["hash"],
+                            shortKeywordUrl=results["shortKeywordUrl"],
+                            shortUrl=results["shortUrl"],
+                            userHash=results["userHash"])
             bittle.save()
             return bittle
         else:
@@ -162,15 +173,16 @@ class Bittle(models.Model):
         return self.hash
 
     def _get_stats(self):
-        now = datetime.now()
         stamp = self.statstamp
         timeout = timedelta(minutes=30)
-        if stamp is None or now - stamp > timeout:
-            create_api = "http://api.bit.ly/stats"
-            data = urlencode(dict(version="2.0.1", hash=self.hash, login=settings.BITLY_LOGIN, apiKey=settings.BITLY_API_KEY))
-            link = urlopen('%s?%s' % (create_api, data), timeout=BITLY_TIMEOUT).read().strip()
-            self.statstring = link
-            self.statstamp = now
+        if stamp is None or now() - stamp > timeout:
+            stats_api = "http://api.bit.ly/stats"
+            data = dict(version="2.0.1", hash=self.hash,
+                        login=settings.BITLY_LOGIN,
+                        apiKey=settings.BITLY_API_KEY)
+            response = requests.post(stats_api, data=data)
+            self.statstring = response.content
+            self.statstamp = now()
             self.save()
         return json.loads(self.statstring)["results"]
 
@@ -197,7 +209,8 @@ class Bittle(models.Model):
                     return self.domain
 
         referrers = self.stats["referrers"]
-        referrer_list = [Referrer(domain, referrers[domain]) for domain in referrers]
+        referrer_list = [Referrer(domain, referrers[domain]) for domain in
+                         referrers]
         return referrer_list
 
     referrers = property(_get_referrers)
