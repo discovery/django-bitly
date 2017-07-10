@@ -48,8 +48,10 @@ class BittleManager(models.Manager):
     def filter_for_instance(self, obj):
         app_label = obj._meta.app_label
         model = obj._meta.model_name
-        return self.filter(content_type__app_label=app_label,
-                           content_type__model=model, object_id=obj.pk)
+        return self.filter(
+            content_type__app_label=app_label,
+            content_type__model=model, object_id=obj.pk,
+        )
 
     def get_for_instance(self, obj):
         try:
@@ -134,11 +136,13 @@ class BittleManager(models.Manager):
         link = response.json()
         if link["errorCode"] == 0 and link["statusCode"] == "OK":
             results = link["results"][url]
-            bittle = Bittle(content_object=obj, absolute_url=url,
-                            hash=results["hash"],
-                            shortKeywordUrl=results["shortKeywordUrl"],
-                            shortUrl=results["shortUrl"],
-                            userHash=results["userHash"])
+            bittle = Bittle(
+                content_object=obj, absolute_url=url,
+                hash=results["hash"],
+                shortKeywordUrl=results["shortKeywordUrl"],
+                shortUrl=results["shortUrl"],
+                userHash=results["userHash"],
+            )
             bittle.save()
             return bittle
         else:
@@ -177,9 +181,12 @@ class Bittle(models.Model):
         timeout = timedelta(minutes=30)
         if stamp is None or now() - stamp > timeout:
             stats_api = "http://api.bit.ly/stats"
-            data = dict(version="2.0.1", hash=self.hash,
-                        login=settings.BITLY_LOGIN,
-                        apiKey=settings.BITLY_API_KEY)
+            data = {
+                'version': "2.0.1",
+                'hash': self.hash,
+                'login': settings.BITLY_LOGIN,
+                'apiKey': settings.BITLY_API_KEY,
+            }
             response = requests.post(stats_api, data=data)
             self.statstring = response.content
             self.statstamp = now()
@@ -209,8 +216,10 @@ class Bittle(models.Model):
                     return self.domain
 
         referrers = self.stats["referrers"]
-        referrer_list = [Referrer(domain, referrers[domain]) for domain in
-                         referrers]
+        referrer_list = [
+            Referrer(domain, referrers[domain])
+            for domain in referrers
+        ]
         return referrer_list
 
     referrers = property(_get_referrers)
