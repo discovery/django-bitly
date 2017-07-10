@@ -176,7 +176,8 @@ class Bittle(models.Model):
     def __unicode__(self):
         return self.hash
 
-    def _get_stats(self):
+    @property
+    def stats(self):
         stamp = self.statstamp
         timeout = timedelta(minutes=30)
         if stamp is None or now() - stamp > timeout:
@@ -193,14 +194,12 @@ class Bittle(models.Model):
             self.save()
         return json.loads(self.statstring)["results"]
 
-    stats = property(_get_stats)
-
-    def _get_clicks(self):
+    @property
+    def clicks(self):
         return self.stats["clicks"]
 
-    clicks = property(_get_clicks)
-
-    def _get_referrers(self):
+    @property
+    def referrers(self):
         class Referrer:
             domain = ""
             links = []
@@ -221,8 +220,6 @@ class Bittle(models.Model):
             for domain in referrers
         ]
         return referrer_list
-
-    referrers = property(_get_referrers)
 
     @models.permalink
     def get_absolute_url(self):
