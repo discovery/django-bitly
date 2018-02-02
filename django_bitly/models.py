@@ -151,7 +151,7 @@ class BittleManager(models.Manager):
 
 class Bittle(models.Model):
     """An object representing a Bit.ly link to a local object."""
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType,on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = fields.GenericForeignKey('content_type', 'object_id')
     absolute_url = models.URLField(max_length=1024)
