@@ -7,3 +7,4 @@ notes.txt
 dist
 build
 *.db
+.idea
