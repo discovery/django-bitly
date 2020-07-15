@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import requests
 import six
+from django.urls import reverse
 
 try:
     from django.utils.timezone import now
@@ -28,6 +29,7 @@ class StringHolder(models.Model):
     A helper model that allows you to create a Bittle with just a URL in a
     string rather than a Django object defining get_absolute_url().
     """
+
     absolute_url = models.URLField(max_length=1024)
 
     def __unicode__(self):
@@ -50,7 +52,8 @@ class BittleManager(models.Manager):
         model = obj._meta.model_name
         return self.filter(
             content_type__app_label=app_label,
-            content_type__model=model, object_id=obj.pk,
+            content_type__model=model,
+            object_id=obj.pk,
         )
 
     def get_for_instance(self, obj):
@@ -76,14 +79,17 @@ class BittleManager(models.Manager):
         if not hasattr(obj, 'get_absolute_url'):
             raise BittleException(
                 "Object '%s' does not have a 'get_absolute_url' method."
-                % obj.__unicode__())
+                % obj.__unicode__()
+            )
 
         current_domain = Site.objects.get_current().domain
 
         obj_url = obj.get_absolute_url()
         if re.match(
-                r'^(aim|apt|bitcoin|callto|cid|data|dav|fax|feed|geo|go|h323|iax|im|magnet|mailto|message|mid|msnim|mvn|news|palm|paparazzi|pres|proxy|query|session|sip|sips|skype|sms|spotify|steam|tag|tel|things|urn|uuid|view-source|ws|wyciwyg|xmpp|ymsgr):',
-                obj_url, re.IGNORECASE):
+            r'^(aim|apt|bitcoin|callto|cid|data|dav|fax|feed|geo|go|h323|iax|im|magnet|mailto|message|mid|msnim|mvn|news|palm|paparazzi|pres|proxy|query|session|sip|sips|skype|sms|spotify|steam|tag|tel|things|urn|uuid|view-source|ws|wyciwyg|xmpp|ymsgr):',
+            obj_url,
+            re.IGNORECASE,
+        ):
             # These are the URI Schemes that can be legitimately used with no slashes:
             # http://en.wikipedia.org/wiki/URI_scheme
             # Treat these as ready-to-go
@@ -127,8 +133,13 @@ class BittleManager(models.Manager):
             pass
 
         create_api = 'http://api.bit.ly/shorten'
-        data = dict(version="2.0.1", longUrl=url, login=settings.BITLY_LOGIN,
-                    apiKey=settings.BITLY_API_KEY, history=1)
+        data = dict(
+            version="2.0.1",
+            longUrl=url,
+            login=settings.BITLY_LOGIN,
+            apiKey=settings.BITLY_API_KEY,
+            history=1,
+        )
         response = requests.post(create_api, data=data, timeout=BITLY_TIMEOUT)
         if response.status_code != requests.codes.OK:
             raise BittleException("Failed secondary: %s" % response.status_code)
@@ -137,7 +148,8 @@ class BittleManager(models.Manager):
         if link["errorCode"] == 0 and link["statusCode"] == "OK":
             results = link["results"][url]
             bittle = Bittle(
-                content_object=obj, absolute_url=url,
+                content_object=obj,
+                absolute_url=url,
                 hash=results["hash"],
                 shortKeywordUrl=results["shortKeywordUrl"],
                 shortUrl=results["shortUrl"],
@@ -151,7 +163,8 @@ class BittleManager(models.Manager):
 
 class Bittle(models.Model):
     """An object representing a Bit.ly link to a local object."""
-    content_type = models.ForeignKey(ContentType,on_delete=models.CASCADE)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = fields.GenericForeignKey('content_type', 'object_id')
     absolute_url = models.URLField(max_length=1024)
@@ -215,12 +228,8 @@ class Bittle(models.Model):
                     return self.domain
 
         referrers = self.stats["referrers"]
-        referrer_list = [
-            Referrer(domain, referrers[domain])
-            for domain in referrers
-        ]
+        referrer_list = [Referrer(domain, referrers[domain]) for domain in referrers]
         return referrer_list
 
-    @models.permalink
     def get_absolute_url(self):
-        return 'bittle', [self.id]
+        return reverse('bittle', None, [self.id])

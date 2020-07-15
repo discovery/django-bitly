@@ -29,7 +29,6 @@ object_dict = {'queryset': get_objects()}
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-
     url(r'^$', ListView.as_view(**object_dict)),
     url(r'^(?P<pk>\w+)/$', DetailView.as_view(**object_dict), name="test"),
 ]

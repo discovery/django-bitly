@@ -58,11 +58,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
     ],
-    packages=[
-        'django_bitly',
-        'django_bitly.migrations',
-        'django_bitly.templatetags',
-    ],
+    packages=['django_bitly', 'django_bitly.migrations', 'django_bitly.templatetags'],
     provides=['django_bitly'],
     install_requires=['django>=1.8', 'six', 'requests'],
 )

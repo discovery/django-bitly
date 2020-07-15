@@ -10,15 +10,21 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
-    ]
+    dependencies = [('contenttypes', '0002_remove_content_type_name')]
 
     operations = [
         migrations.CreateModel(
             name='Bittle',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('object_id', models.PositiveIntegerField()),
                 ('absolute_url', models.URLField(max_length=1024)),
                 ('hash', models.CharField(max_length=10)),
@@ -26,19 +32,34 @@ class Migration(migrations.Migration):
                 ('shortUrl', models.URLField()),
                 ('userHash', models.CharField(max_length=10)),
                 ('statstring', models.TextField(blank=True, editable=False)),
-                ('statstamp', models.DateTimeField(blank=True, editable=False, null=True)),
+                (
+                    'statstamp',
+                    models.DateTimeField(blank=True, editable=False, null=True),
+                ),
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.ContentType')),
+                (
+                    'content_type',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to='contenttypes.ContentType',
+                    ),
+                ),
             ],
-            options={
-                'ordering': ('-date_created',),
-            },
+            options={'ordering': ('-date_created',)},
         ),
         migrations.CreateModel(
             name='StringHolder',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('absolute_url', models.URLField(max_length=1024)),
             ],
         ),
