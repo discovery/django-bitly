@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import requests
 import six
+from django.urls import reverse
 
 try:
     from django.utils.timezone import now
@@ -221,6 +222,5 @@ class Bittle(models.Model):
         ]
         return referrer_list
 
-    @models.permalink
     def get_absolute_url(self):
-        return 'bittle', [self.id]
+        return reverse('bittle', None, [self.id])
