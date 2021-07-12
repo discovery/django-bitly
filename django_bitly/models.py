@@ -17,9 +17,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.conf import settings
 try:
-    from django.utils import simplejson as json
-except ImportError:
     import json
+except ImportError:
+    from django.utils import simplejson as json
 
 from .conf import BITLY_TIMEOUT
 from .exceptions import BittleException
