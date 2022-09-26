@@ -35,7 +35,7 @@ from distutils.core import setup
 
 
 description, long_description = __doc__.split('\n\n', 1)
-VERSION = '1.0.0'
+VERSION = '2.0.0'
 
 setup(
     name='django-bitly',
@@ -62,5 +62,9 @@ setup(
         'django_bitly.migrations',
     ],
     provides=['django_bitly'],
-    install_requires=['django>=1.3,<2.0', 'six'],
+    python_requires='>=3.7.0',
+    install_requires=[
+        "Django>=1.11, <2.0",
+        'six',
+        ],
 )
